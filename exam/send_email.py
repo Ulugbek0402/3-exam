@@ -3,9 +3,9 @@ import ssl
 
 
 def send_email(receiver_email, body):
-    code = input('Please enter the code "pqmk cvds dzdn gmll": ')
-    if code != "pqmk cvds dzdn gmll":
-        print("Incorrect code. Email not sent.")
+    password = input("Enter your email password: ")
+    if not password:
+        print("No password entered. Email not sent.")
         return
 
     import student
@@ -13,9 +13,7 @@ def send_email(receiver_email, body):
     if not user:
         print("Not logged in.")
         return
-
     sender_email = user[1]
-    password = "pqmk cvds dzdn gmll"
 
     message = f"Subject: Message\n\n{body}"
     context = ssl.create_default_context()
