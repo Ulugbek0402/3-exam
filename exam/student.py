@@ -139,45 +139,39 @@ def view_my_courses():
 
 
 def send_message_menu():
+    user = get_active_user()
+    if not user:
+        print("Not logged in.")
+        return
+    sid = str(user[0])
+
     purchases = read("purchases.csv")
-    courses = read("courses.csv")
-    sid = get_active_user()[0]
-    my_courses = [p for p in purchases if p[2] == sid]
+    my_courses = [p for p in purchases if p[0] == sid]
     if not my_courses:
-        print("You have not purchased any courses.")
+        print("You haven't purchased any courses.")
         return
-    print("Your Courses:")
+
+    courses = read("courses.csv")
+
+    print("Your courses:")
     for p in my_courses:
-        c = next(course for course in courses if course[0] == p[1])
-        print(f"{c[0]}: {c[1]}")
-    cid = input("Enter Course ID for messaging: ")
-    course = next((c for c in courses if c[0] == cid), None)
-    if not course:
-        print("Invalid Course ID.")
+        course = next((c for c in courses if c[0] == p[1]), None)
+        if course:
+            print(f"{course[0]}. {course[1].capitalize()}")
+
+    selected = input("Enter course ID to message: ")
+    if selected not in [p[1] for p in my_courses]:
+        print("Invalid choice.")
         return
-    teacher_id = course[4]
-    users = read("users.csv")
-    teacher = next((u for u in users if u[0] == teacher_id), None)
-    if not teacher:
-        print("Instructor not found.")
+
+    course = next((c for c in courses if c[0] == selected), None)
+    if not course or len(course) < 4:
+        print("Teacher email not found for this course.")
         return
-    while True:
-        print("1. Send by Email\n2. Send in Platform\n3. Back")
-        choice = input("Choice: ")
-        msg = input("Enter your message: ") if choice in ('1', '2') else None
-        if choice == '1':
-            send_email(teacher[1], msg)
-            print("Email sent.")
-            break
-        elif choice == '2':
-            new_id = str(generate_id("messages.csv"))
-            write("messages.csv", [new_id, sid, teacher_id, msg], mode="a")
-            print("Message stored in platform.")
-            break
-        elif choice == '3':
-            return
-        else:
-            print("Invalid choice.")
+    receiver_email = course[3]
+
+    body = input("Type your message: ")
+    send_email(receiver_email, body)
 
 
 def show_balance():
