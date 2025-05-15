@@ -14,7 +14,7 @@ def add_course():
     print("Course added.")
 
 
-# Displays students who purchased the teacher's courses
+
 
 def view_purchased_students():
     purchases = read("purchases.csv")

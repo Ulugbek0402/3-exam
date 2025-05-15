@@ -1,10 +1,7 @@
 from file_manager import read, write
-from utils import generate_id
 from send_email import send_email
 from auth import get_active_user
 
-
-# Lets a student purchase a course
 
 def luhn_checksum(card_number):
     def digits_of(n):
@@ -28,43 +25,37 @@ def is_valid_card(card_number):
 
 
 def purchase_course():
-    # 1) Ensure someone is logged in
     user = get_active_user()
     if not user:
         print("Not logged in.")
         return
     uid = str(user[0])
 
-    # 2) Load courses
-    courses = read("courses.csv")  # expects rows like [id, title, price]
+    courses = read("courses.csv")
     if not courses:
         print("No courses available.")
         return
 
-    # 3) Define any fallback prices (keyed by lowercase title)
     default_prices = {
         "math": "1000$",
-        # add more if you have other bad entries
+
     }
 
-    # 4) Display courses with correct prices
     print("Available courses:")
     for c in courses:
         title = c[1].capitalize()
         price_str = c[2].strip()
-        # if price field just repeats the title, use our fallback
+
         if price_str.lower() == title.lower():
             price_str = default_prices.get(title.lower(), price_str)
         print(f"{c[0]}. {title} - {price_str}")
 
-    # 5) Choose one
     course_id = input("Enter course ID to purchase: ")
     selected = next((c for c in courses if c[0] == course_id), None)
     if not selected:
         print("Invalid course ID.")
         return
 
-    # 6) Parse the price (strip '$' and convert)
     raw_price = selected[2].strip()
     if raw_price.lower() == selected[1].lower():
         raw_price = default_prices.get(raw_price.lower(), raw_price)
@@ -76,15 +67,13 @@ def purchase_course():
         print(f"Invalid price format: {selected[2]}")
         return
 
-    # 7) Load balance and check funds
-    balances = read("balances.csv")  # rows: [user_id, balance]
+    balances = read("balances.csv")
     bal_row = next((b for b in balances if b[0] == uid), None)
     balance = float(bal_row[1]) if bal_row else 0.0
     if balance < price:
         print(f"Insufficient balance (have {balance}, need {price}). Please top up.")
         return
 
-    # 8) Deduct price and save balances.csv
     new_balance = balance - price
     if bal_row:
         bal_row[1] = str(new_balance)
@@ -92,15 +81,12 @@ def purchase_course():
         balances.append([uid, str(new_balance)])
     write("balances.csv", balances)
 
-    # 9) Record the purchase
-    purchases = read("purchases.csv")  # rows: [user_id, course_id]
+    purchases = read("purchases.csv")
     purchases.append([uid, course_id])
     write("purchases.csv", purchases)
 
     print(f"Course {selected[1].capitalize()} purchased! Remaining balance: {new_balance}")
 
-
-# Shows the student's purchased courses
 
 def view_my_courses():
     user = get_active_user()
@@ -122,7 +108,6 @@ def view_my_courses():
 
     }
 
-    # 5) Print them
     print("Your courses:")
     for p in my_purchases:
         course_id = p[1]
